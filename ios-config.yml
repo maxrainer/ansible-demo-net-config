@@ -11,6 +11,11 @@
 
   - name: TOP LEVEL
     block:
+      - set_fact: 
+          top_level_lines: "{{ top_level_lines.splitlines() }}"
+        when: not top_level_lines is sequence
+      - debug: 
+          var: top_level_lines
       - name: top level config
         ios_config:
           lines: "{{ top_level_lines }}"

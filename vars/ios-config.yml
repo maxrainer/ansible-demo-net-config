@@ -1,7 +1,7 @@
 ---
 
 top_level_lines: 
-  - hostname "{{ inventory_hostname }}"
+  - hostname {{ inventory_hostname }}
 
 top_level_exact_include: ip http
 top_level_exact_lines:
