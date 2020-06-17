@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+<h2>Device Index
+
+{% for group, member in groups.items() %}
+{% if group != 'all' and group != 'ungrouped' %}
+    <h3>{{ group }}</h3>
+{% for h in member %}
+    <a href="{{ h }}_intf_report.html" title="{{ h }}" >
+    {{ h }}_intf_report
+    </a><br />
+{% endfor %}
+{% endif %}
+{% endfor %}
+</body>
+</html>

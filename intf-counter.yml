@@ -1,0 +1,71 @@
+---
+
+- name: "COLLECT INTERFACE COUNTER AND GENERATE REPORT"
+  hosts: all
+  gather_facts: no
+  connection: network_cli
+  vars:
+    backup_dir: ./tmp/data/
+    web_dir: ./tmp/
+    intf_diffs: []
+    diff_calc: false
+  tasks:
+
+  - name: load backup data to variable
+    set_fact: 
+      _intfs_backup: "{{ lookup('file', backup_dir + inventory_hostname + '_backup.json' ) }}"
+    ignore_errors: yes
+
+  - name: gather interface information from device
+    clay584.genie.learn_genie:
+      host: "{{ ansible_host }}"
+      username: "{{ ansible_user }}"
+      password: "{{ ansible_ssh_pass }}"
+      os: "{{ ansible_network_os }}"
+      feature: interface
+    register: _ios_intfs
+
+  - include_tasks: ./includes/diff_intfs.yml
+    loop:
+      "{{ _ios_intfs.genie.interface |  dict2items }}"
+    loop_control:
+      loop_var: _outer_intf
+      label: "{{ _outer_intf.key }}"
+    when: diff_calc and _intfs_backup is defined
+  
+  - name: remove local files
+    file: 
+      path: "{{ item }}"
+      state: absent
+    loop:
+      - "{{ web_dir }}{{ inventory_hostname }}_intf_report.html"
+      - "{{ web_dir }}index.html"
+      - "{{ backup_dir }}{{ inventory_hostname }}_backup.json"
+      - "{{ backup_dir }}{{ inventory_hostname }}_diff_data.json"
+  
+  - name: generate index.html
+    template: 
+      src: ./reports/index.j2
+      dest: "{{ web_dir }}index.html"
+    delegate_to: localhost
+    run_once: true
+
+  - name: generate interface report
+    template: 
+      src: ./reports/intf.j2
+      dest: "{{ web_dir }}{{ inventory_hostname }}_intf_report.html"
+    delegate_to: localhost
+
+  - name: write backup data 
+    copy:
+      content: "{{ _ios_intfs }}"
+      dest: "{{ backup_dir }}{{ inventory_hostname }}_backup.json"
+      force: yes
+    delegate_to: localhost
+
+  - name: write calculated diff data
+    copy:
+      content: "{{ intf_diffs }}"
+      dest: "{{ backup_dir }}{{ inventory_hostname }}_diff_data.json"
+      force: yes
+    delegate_to: localhost

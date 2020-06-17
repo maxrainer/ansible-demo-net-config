@@ -1,0 +1,70 @@
+---
+# common reporting show commands using Cisco genie 
+# supported modules: https://pubhub.devnetcloud.com/media/genie-feature-browser/docs/#/models
+# tested with: arp, interface, static_routing, vlan
+# can either learn and write backup file or compare to backup file (set comp = true)
+
+- name: "COLLECT SHOW COMMAND AND GENERATE HTML REPORT"
+  hosts: all
+  gather_facts: no
+  connection: network_cli
+  vars:
+    backup_dir: ./tmp/data/
+    device_feature: vlan
+    comp: true
+  tasks:
+
+  - name: learn genie data
+    block:
+      - name: "learn genie data for feature: '{{ device_feature }}''"
+        clay584.genie.learn_genie:
+          host: "{{ ansible_host }}"
+          username: "{{ ansible_user }}"
+          password: "{{ ansible_ssh_pass }}"
+          os: "{{ ansible_network_os }}"
+          feature: "{{ device_feature }}"
+        register: _genie_result
+      - debug:
+          var: _genie_result
+      - name: remove local files
+        file: 
+          path: "{{ item }}"
+          state: absent
+        loop:
+          - "{{ backup_dir }}{{ inventory_hostname }}{{ device_feature }}_backup.json"
+      - name: "write data backup for '{{ device_feature }}'"
+        copy:
+          content: "{{  _genie_result | to_nice_json }}"
+          dest: "{{ backup_dir }}{{ inventory_hostname }}{{ device_feature }}_backup.json"
+          force: yes
+        delegate_to: localhost
+    when: not comp
+
+  - name: compare feature with genie 
+    block:
+      - name: read backup data 
+        set_fact:
+          _backup_data: "{{ lookup('file', backup_dir + inventory_hostname + device_feature + '_backup.json') }}"
+      
+      - name: "compare genie data for feature: '{{ device_feature }}''"
+        clay584.genie.learn_genie:
+          host: "{{ ansible_host }}"
+          username: "{{ ansible_user }}"
+          password: "{{ ansible_ssh_pass }}"
+          os: "{{ ansible_network_os }}"
+          feature: "{{ device_feature }}"
+          compare_to: "{{ _backup_data }}"
+        register: _genie_result
+      - debug:
+          var: _genie_result 
+    when: comp
+  
+
+
+  
+
+
+
+    
+    
+

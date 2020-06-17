@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+<h3><a href="index.html">--- back ---</a></h3>  
+<h1>{{ inventory_hostname }}</h1>
+{% for intf_name, intf_value in _ios_intfs.genie.interface.items() %}
+<h2>{{ intf_name }}</h2>
+{% if 'description' in intf_value %}
+<b>Description:</b> {{ intf_value.description }}<br />
+{% endif %}
+{% if 'mac_address' in intf_value %}
+<b>MAC Address:</b> {{ intf_value.mac_address }}<br />
+{% endif %}
+{% if 'oper_status' in intf_value %}
+<b>Oper status:</b> {{ intf_value.oper_status}}<br />
+{% endif %}
+{% if 'counters' in intf_value %}
+<table>
+    <thead>
+        <tr>
+        <th>state<th>
+{% for counter_name, counter in intf_value.counters.items() %}
+{% if counter_name != 'rate' %}
+            <th>{{ counter_name }}</th>
+{% endif %}
+{% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+        <td><b>current<b><td>
+{% for counter_name, counter in intf_value.counters.items() %}
+{% if counter_name != 'rate' %}
+            <td>{{ counter }}</td>
+{% endif %}
+{% endfor %}
+</tr>
+{% if _intfs_backup is defined %}
+<tr>
+<td><b>diff<b><td>
+{% for counter_name, counter in intf_value.counters.items() %}
+{% if counter_name != 'rate' and counter_name != 'last_clear' %}
+            <td>{{ counter - _intfs_backup.genie.interface[intf_name].counters[counter_name] }}</td>
+{% endif %}
+{% endfor %}
+    </tr>
+{% endif %}
+    </tbody>
+</table>
+{% endif %}
+{% endfor %}
+
+</body>
+</html>

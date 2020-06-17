@@ -1,0 +1,28 @@
+---
+
+top_level_lines: 
+  - hostname "{{ inventory_hostname }}"
+
+top_level_exact_include: ip http
+top_level_exact_lines:
+  - ip http server
+  - ip http port 3023
+  - ip http authentication local
+  - no ip http secure-server
+top_level_exact_before: no ip http server
+
+nested_intf_name: Loopback2
+nested_intf_lines: 
+  - description ANSIBLE CONFIGURED 
+  - ip address 10.199.199.1 255.255.255.255
+
+qos_classmap_lines:
+  - match dscp cs7
+qos_classmap_name: Scavenger
+qos_policer_lines: 
+  - conform-action transmit
+  - exceed-action drop
+qos_policer_parents:
+  - policy-map Foo
+  - class Scavenger
+  - police cir 64000

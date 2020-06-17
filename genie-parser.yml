@@ -1,0 +1,29 @@
+---
+# available parsers:
+# https://pubhub.devnetcloud.com/media/genie-feature-browser/docs/#/parsers
+# only works with genie version < 20
+
+- name: "COLLECT SHOW COMMAND AND PRINTS STRUCTURED DATA"
+  hosts: all
+  gather_facts: no
+  connection: network_cli
+  collections:
+    - clay584.genie
+  vars:
+    show_command: show interfaces switchport
+  tasks:
+
+  - name: Read in parse_genie role
+    include_role:
+      name: clay584.parse_genie
+    tags: [always]
+
+  - name: get Data From Device
+    ios_command:
+      commands: "{{ show_command }}"
+    register: _command_result
+
+  - name: print Structured Data
+    debug:
+      msg: "{{ _command_result['stdout'][0] | clay584.genie.parse_genie(command=show_command, os=ansible_network_os) }}"
+    delegate_to: localhost

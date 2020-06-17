@@ -1,0 +1,17 @@
+---
+
+- name: set diff variables
+  set_fact:
+    _intf_cache: "{{ _intf_cache | default({}) | combine ( {'name': _outer_intf.key } ) }}"
+    diff_out_octets: "{{ _outer_intf.value.counters.out_octets -  _intfs_backup.genie.interface[_outer_intf.key].counters.out_octets }}"
+    diff_in_octets: "{{ _outer_intf.value.counters.in_octets -  _intfs_backup.genie.interface[_outer_intf.key].counters.in_octets }}"
+    diff_out_errors: "{{ _outer_intf.value.counters.out_errors -  _intfs_backup.genie.interface[_outer_intf.key].counters.out_errors }}"
+    diff_in_errors: "{{ _outer_intf.value.counters.in_errors -  _intfs_backup.genie.interface[_outer_intf.key].counters.in_errors }}"
+    
+- name: add diff to global var
+  set_fact: 
+    _intf_cache: "{{ _intf_cache | combine ( {'out_octets': diff_out_octets, 'in_octets': diff_in_octets, 
+        'out_errors': diff_out_errors, 'in_errors': diff_in_errors } ) }}"
+
+- set_fact: 
+    intf_diffs: "{{ intf_diffs + [_intf_cache] }}"
