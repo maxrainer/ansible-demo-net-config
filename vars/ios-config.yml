@@ -9,7 +9,6 @@ top_level_exact_lines:
   - ip http port 3023
   - ip http authentication local
   - no ip http secure-server
-top_level_exact_before: no ip http server
 
 nested_intf_name: Loopback2
 nested_intf_lines: 

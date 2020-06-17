@@ -31,7 +31,6 @@
           running_config: "{{ _show_runn.stdout[0] }}"
           lines: "{{ top_level_exact_lines }}"
           match: exact
-          before: "{{ top_level_exact_before }}"
         register: _result_toplevel_exact
       - debug: 
           var: _result_toplevel_exact
@@ -44,6 +43,7 @@
           lines: "{{ nested_intf_lines }}"
           parents: "interface {{ nested_intf_name }}" 
           match: line
+          before: "default interface {{ nested_intf_name }}"
         register: _result_nested
       - debug: 
           var: _result_nested
