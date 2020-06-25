@@ -12,16 +12,18 @@ top_level_exact_lines:
 
 nested_intf_name: Loopback2
 nested_intf_lines: 
-  - description ANSIBLE CONFIGURED 
-  - ip address 10.199.199.1 255.255.255.255
+    - description ANSIBLE CONFIGURED
+    - ip address 10.199.199.1 255.255.255.255
 
+qos_policy_map: Foo
 qos_classmap_lines:
   - match dscp cs7
 qos_classmap_name: Scavenger
+qos_cir: "64000"
 qos_policer_lines: 
   - conform-action transmit
   - exceed-action drop
 qos_policer_parents:
-  - policy-map Foo
-  - class Scavenger
-  - police cir 64000
+  - "policy-map {{ qos_policy_map }}"
+  - "class {{ qos_classmap_name }}"
+  - "police cir {{ qos_cir }}"

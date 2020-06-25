@@ -1,0 +1,13 @@
+
+- name: json test
+  hosts: localhost
+  gather_facts: no
+  connection: local
+  tasks:
+
+  - set_fact: 
+      v1: "{ 'foo': 'bar', 'foo1': 'bar1'} "
+  
+  - debug:
+      msg: "{{ v1 | to_nice_json }}"
+
