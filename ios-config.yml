@@ -67,6 +67,9 @@
         ios_config:
           lines: "{{ qos_classmap_lines }}"
           parents: "class-map match-all {{ qos_classmap_name }}"
+        register: _result_mn_classmap
+      - debug: 
+          var: _result_mn_classmap
       - name: "QoS configure policer in {{ qos_classmap_name }} class"
         ios_config:
           lines: "{{ qos_policer_lines }}"
