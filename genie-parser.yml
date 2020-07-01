@@ -10,7 +10,7 @@
   collections:
     - clay584.genie
   vars:
-    show_command: show interfaces switchport
+    show_command: show arp
   tasks:
 
   - name: Read in parse_genie role

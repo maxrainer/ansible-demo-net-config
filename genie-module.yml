@@ -10,8 +10,8 @@
   connection: network_cli
   vars:
     backup_dir: ./tmp/data/
-    device_feature: vlan
-    comp: true
+    device_feature: routing
+    comp: false
   tasks:
 
   - name: learn genie data
@@ -58,13 +58,4 @@
       - debug:
           var: _genie_result 
     when: comp
-  
-
-
-  
-
-
-
     
-    
-
