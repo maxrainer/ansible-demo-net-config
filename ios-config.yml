@@ -43,7 +43,6 @@
           lines: "{{ nested_intf_lines }}"
           parents: "interface {{ nested_intf_name }}" 
           match: line
-          before: "default interface {{ nested_intf_name }}"
         register: _result_nested
       - debug: 
           var: _result_nested
