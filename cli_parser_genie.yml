@@ -23,12 +23,15 @@
           command: "{{ _command }}"
           os: iosxe
       register: _parser_result
+    - name: print parser output
+      debug:
+        var: _parser_result
     when: ansible_network_os == 'ios'
 
   - name: IOSXR 
     block:
     - name: gather command output from IOSXR
-      cisco.ios.ios_command:
+      cisco.iosxr.iosxr_command:
         commands: "{{ _command }}"
       register: _command_result
     - name: parse command
@@ -37,10 +40,30 @@
         parser:
           name: ansible.netcommon.pyats
           command: "{{ _command }}"
-          os: iosxe
+          os: iosxr
       register: _parser_result
+    - name: print parser output
+      debug:
+        var: _parser_result
     when: ansible_network_os == 'iosxr'
+
+  - name: NXOS
+    block:
+    - name: gather command output from NXOS
+      cisco.nxos.nxos_command:
+        commands: "{{ _command }}"
+      register: _command_result
+    - name: parse command
+      ansible.netcommon.cli_parse:
+        text: "{{ _command_result['stdout'][0] }}"
+        parser:
+          name: ansible.netcommon.pyats
+          command: "{{ _command }}"
+          os: nxos
+      register: _parser_result
+    - name: print parser output
+      debug:
+        var: _parser_result
+    when: ansible_network_os == 'nxos'
+
   
-  - name: print parser output
-    debug:
-      var: _parser_result
