@@ -1,0 +1,22 @@
+---
+
+- name: PARSE SHOW COMMANDS ON IOS AND NXOS WITH GENIE
+  hosts: all
+  gather_facts: no
+  connection: network_cli
+  vars:
+    _command: "show interface"
+    _parser: "ansible.netcommon.pyats"
+
+  tasks:
+  - name: "Run command and use parser {{ _parser }}"
+    ansible.netcommon.cli_parse:
+      command: "{{ _command }}"
+      parser:
+        name: "{{ _parser }}"
+        command: "{{ _command }}"
+    register: parser_output
+
+  - name: "print {{ _command }} parsed" 
+    debug:
+      var: parser_output.parsed
