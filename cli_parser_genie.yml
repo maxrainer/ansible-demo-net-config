@@ -1,0 +1,28 @@
+---
+
+- name: PARSE SHOW COMMANDS
+  hosts: all
+  gather_facts: no
+  connection: network_cli
+  vars:
+    _command: "show ip route"
+
+  tasks:
+
+  - name: get ip routing table
+    cisco.ios.ios_command:
+      commands: "{{ _command }}"
+    register: _command_result
+  
+  - name: parse routing table 
+    ansible.netcommon.cli_parse:
+      text: "{{ _command_result['stdout'][0] }}"
+      parser:
+        name: ansible.netcommon.pyats
+        command: "{{ _command }}"
+        os: iosxe
+    register: _parser_result
+  
+  - name: debug IOS route parser
+    debug:
+      var: _parser_result

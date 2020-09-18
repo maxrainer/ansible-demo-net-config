@@ -10,7 +10,7 @@
   connection: network_cli
   vars:
     backup_dir: ./tmp/data/
-    device_feature: routing
+    device_feature: vlan
     comp: false
   tasks:
 

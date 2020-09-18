@@ -6,6 +6,8 @@
   connection: network_cli
   vars_files:
     - "{{ playbook_dir }}/vars/ios-config.yml"
+  vars:
+    - ansible_python_interpreter: "{{ ansible_playbook_python }}"
   become: yes 
   tasks: 
 
