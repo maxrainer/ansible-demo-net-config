@@ -8,14 +8,20 @@
   connection: network_cli
   vars:
     _command: "show interface"
-    _parser: "pyats"
+    _parser: "xml"
+    _xml_command: "| xml"
 
   tasks:
+
+  - set_fact:
+      _command: "{{ _command }} {{ _xml_command }}"
+    when: _parser == "xml"
+
   - name: "Run command and use parser {{ _parser }}"
     ansible.netcommon.cli_parse:
       command: "{{ _command }}"
       parser:
-        name: "n{{ _parser }}"
+        name: "ansible.netcommon.{{ _parser }}"
         command: "{{ _command }}"
     register: parser_output
 
