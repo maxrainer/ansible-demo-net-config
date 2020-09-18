@@ -9,20 +9,38 @@
 
   tasks:
 
-  - name: get ip routing table
-    cisco.ios.ios_command:
-      commands: "{{ _command }}"
-    register: _command_result
+  - name: IOS
+    block:
+    - name: gather command output from IOS
+      cisco.ios.ios_command:
+        commands: "{{ _command }}"
+      register: _command_result
+    - name: parse command
+      ansible.netcommon.cli_parse:
+        text: "{{ _command_result['stdout'][0] }}"
+        parser:
+          name: ansible.netcommon.pyats
+          command: "{{ _command }}"
+          os: iosxe
+      register: _parser_result
+    when: ansible_network_os == 'ios'
+
+  - name: IOSXR 
+    block:
+    - name: gather command output from IOSXR
+      cisco.ios.ios_command:
+        commands: "{{ _command }}"
+      register: _command_result
+    - name: parse command
+      ansible.netcommon.cli_parse:
+        text: "{{ _command_result['stdout'][0] }}"
+        parser:
+          name: ansible.netcommon.pyats
+          command: "{{ _command }}"
+          os: iosxe
+      register: _parser_result
+    when: ansible_network_os == 'iosxr'
   
-  - name: parse routing table 
-    ansible.netcommon.cli_parse:
-      text: "{{ _command_result['stdout'][0] }}"
-      parser:
-        name: ansible.netcommon.pyats
-        command: "{{ _command }}"
-        os: iosxe
-    register: _parser_result
-  
-  - name: debug IOS route parser
+  - name: print parser output
     debug:
       var: _parser_result
