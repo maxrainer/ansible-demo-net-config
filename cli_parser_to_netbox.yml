@@ -1,0 +1,80 @@
+---
+
+- name: PARSE DATA FROM NETWORK DEVICES AND INSERT TO NETBOX
+  hosts: 
+    - ios
+    - iosxr
+  gather_facts: no
+  connection: network_cli
+  vars:
+    _netbox_url: "http://172.16.1.12:8000"
+    _api_token: "0123456789abcdef0123456789abcdef01234567"
+    _default_mac: "00:00:00:00:00:00"
+
+  tasks:
+
+  - name: ADD DEVICE INFORMATION
+    block:
+    - name: capture and parse 'show version' 
+      ansible.netcommon.cli_parse:
+        command: "show version"
+        parser:
+          name: ansible.netcommon.pyats
+      register: _device_result
+    - debug:
+        var: _device_result.parsed.version
+        verbosity: 2
+    - name: push device data to netbox
+      netbox.netbox.netbox_device:
+        netbox_url: "{{ _netbox_url }}"
+        netbox_token: "{{ _api_token }}"
+        data: 
+          name: "{{ inventory_hostname }}"
+          site: "hetzner"
+          serial: "{{ _device_result.parsed.version.chassis_sn | default(omit) }}"
+          device_type: "{{ _device_result.parsed.version.platform | default('unknown') }}"
+          device_role: "router"
+          comments: "added by Ansible"
+    tags: version
+
+  - name: ADD INTERFACE INFORMATION
+    block:
+    - name: capture and parse 'show interface'
+      ansible.netcommon.cli_parse:
+        command: "show interfaces"
+        parser:
+          name: ansible.netcommon.ntc_templates
+      register: _int_result
+    - debug:
+        var: _int_result.parsed
+        verbosity: 2
+    - name: push interface data to netbox
+      netbox.netbox.netbox_device_interface:
+        netbox_url: "{{ _netbox_url }}"
+        netbox_token: "{{ _api_token }}"
+        data:
+          device: "{{ inventory_hostname }}"
+          name: "{{ item.interface }}"
+          description: "{{ item.description | default(omit) }}"
+          mac_address: "{{ item.address | default(_default_mac, true) | ansible.netcommon.hwaddr('linux') }}"
+          type: "Virtual"
+          mtu: "{{ item.mtu | default(omit) }}"
+      loop: "{{ _int_result.parsed }}"
+      loop_control:
+        label: "{{ item.interface }}"
+    tags: intf
+
+
+    # - name: push IP addresses to device interfaces
+    #   netbox.netbox.netbox_ip_address:
+    #     netbox_url: "{{ _netbox_url }}"
+    #     netbox_token: "{{ _api_token }}"
+    #     data:
+    #       prefix: "{{ item.ip_address }}"
+    #       address: "{{ item.ip_address }}"
+    #       interface:
+    #         device: "{{ inventory_hostname }}"
+    #         name: "{{ item.interface }}"
+    #   loop: "{{ _int_result.parsed }}"
+    #   loop_control:
+    #     label: "{{ item.interface }} ==> {{ item.ip_address }}"

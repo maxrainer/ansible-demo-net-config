@@ -7,8 +7,8 @@
   gather_facts: no
   connection: network_cli
   vars:
-    _command: "show interface"
-    _parser: "xml"
+    _command: "show interfaces"
+    _parser: "pyats"
     _xml_command: "| xml"
 
   tasks:
@@ -23,6 +23,7 @@
       parser:
         name: "ansible.netcommon.{{ _parser }}"
         command: "{{ _command }}"
+        os: "{{ _os | default(omit) }}"
     register: parser_output
 
   - name: "print {{ _command }} parsed" 

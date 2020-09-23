@@ -5,27 +5,21 @@
   gather_facts: no
   connection: network_cli
   vars:
-    _command: "show ip route"
+    _command: "show cdp neighbor"
 
   tasks:
 
-  - name: IOS
+  - name: IOS pyATS parser
     block:
-    - name: gather command output from IOS
-      cisco.ios.ios_command:
-        commands: "{{ _command }}"
-      register: _command_result
     - name: parse command
       ansible.netcommon.cli_parse:
-        text: "{{ _command_result['stdout'][0] }}"
+        command: "{{ _command }}"
         parser:
           name: ansible.netcommon.pyats
-          command: "{{ _command }}"
-          os: iosxe
       register: _parser_result
     - name: print parser output
       debug:
-        var: _parser_result
+        var: _parser_result.parsed
     when: ansible_network_os == 'ios'
 
   - name: NXOS
@@ -44,5 +38,5 @@
       register: _parser_result
     - name: print parser output
       debug:
-        var: _parser_result
+        var: _parser_result.parsed
     when: ansible_network_os == 'nxos'

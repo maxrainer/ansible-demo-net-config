@@ -2,3 +2,4 @@ collections:
   - name: cisco.ios
   - name: cisco.iosxr
   - name: cisco.nxos
+  - name: netbox.netbox
