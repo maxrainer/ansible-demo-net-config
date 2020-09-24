@@ -14,7 +14,7 @@
   - name: TOP LEVEL
     block:
       - name: top level config
-        ios_config:
+        cisco.ios.ios_config:
           lines: "{{ top_level_lines }}"
           match: line
         register: _result_toplevel
@@ -25,11 +25,11 @@
   - name: "TOP LEVEL EXACT MATCHING: {{ top_level_exact_include }}"
     block:
       - name: get running config 
-        ios_command:
+        cisco.ios.ios_command:
           commands: "show running-config | include {{ top_level_exact_include }}"
         register: _show_runn
       - name: top level exact matching
-        ios_config:
+        cisco.ios.ios_config:
           running_config: "{{ _show_runn.stdout[0] }}"
           lines: "{{ top_level_exact_lines }}"
           match: exact
@@ -41,7 +41,7 @@
   - name: "NESTED INTERFACE {{ nested_intf_name }}"
     block:
       - name: nested config
-        ios_config: 
+        cisco.ios.ios_config: 
           lines: "{{ nested_intf_lines }}"
           parents: "interface {{ nested_intf_name }}" 
           match: line
@@ -53,7 +53,7 @@
   - name: "NESTED INTERFACE {{ nested_intf_name }} EXACT MATCHING"
     block:
       - name: nested config exact match
-        ios_config: 
+        cisco.ios.ios_config: 
           lines: "{{ nested_intf_lines }}"
           parents: "interface {{ nested_intf_name }}" 
           match: exact
@@ -66,14 +66,14 @@
   - name: MULTI NESTED QoS CONFIG
     block:
       - name: "QoS class map {{ qos_classmap_name }}"
-        ios_config:
+        cisco.ios.ios_config:
           lines: "{{ qos_classmap_lines }}"
           parents: "class-map match-all {{ qos_classmap_name }}"
         register: _result_mn_classmap
       - debug: 
           var: _result_mn_classmap
       - name: "QoS configure policer in {{ qos_classmap_name }} class"
-        ios_config:
+        cisco.ios.ios_config:
           lines: "{{ qos_policer_lines }}"
           parents: "{{ qos_policer_parents }}"
         register: _result_multinested
