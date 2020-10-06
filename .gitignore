@@ -2,3 +2,4 @@ ansible.cfg
 .retry
 tmp/
 collections/ansible_collections/
+labs/

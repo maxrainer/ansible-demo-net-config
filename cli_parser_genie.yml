@@ -1,15 +1,15 @@
 ---
 
-- name: PARSE SHOW COMMANDS ON IOS AND NXOS WITH GENIE
+- name: PARSE SHOW COMMANDS ON DIFFERNET PLATFORMS WITH pyATS / GENIE
   hosts: all
   gather_facts: no
   connection: network_cli
   vars:
-    _command: "show cdp neighbor"
+    _command: "show version"
 
   tasks:
 
-  - name: IOS pyATS parser
+  - name: pyATS parser
     block:
     - name: parse command
       ansible.netcommon.cli_parse:
@@ -20,23 +20,3 @@
     - name: print parser output
       debug:
         var: _parser_result.parsed
-    when: ansible_network_os == 'ios'
-
-  - name: NXOS
-    block:
-    - name: gather command output from NXOS
-      cisco.nxos.nxos_command:
-        commands: "{{ _command }}"
-      register: _command_result
-    - name: parse command
-      ansible.netcommon.cli_parse:
-        text: "{{ _command_result['stdout'][0] }}"
-        parser:
-          name: ansible.netcommon.pyats
-          command: "{{ _command }}"
-          os: nxos
-      register: _parser_result
-    - name: print parser output
-      debug:
-        var: _parser_result.parsed
-    when: ansible_network_os == 'nxos'
