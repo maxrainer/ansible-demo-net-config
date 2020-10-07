@@ -69,7 +69,7 @@
         netbox_token: "{{ _api_token }}"
         validate_certs: no
         data:
-          prefix: "{{ item.ip_address }}"
+          address: "{{ item.ip_address }}"
           interface:
             name: "{{ item.interface }}"
             device: "{{ inventory_hostname }}"
