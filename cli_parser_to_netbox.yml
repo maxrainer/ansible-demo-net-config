@@ -1,4 +1,7 @@
 ---
+# grapping and pushing data from Network to NetBox
+# using 3 different parsing methods:
+# pyATS, ntc_templates, facts
 
 - name: PARSE DATA FROM NETWORK DEVICES AND INSERT TO NETBOX
   hosts: 
@@ -78,3 +81,67 @@
         label: "{{ item.interface }} ==> {{ item.ip_address }}"
       when: item.ip_address != ""
     tags: intf
+
+  - name: ADD VLAN INFORMATION FOR L2 DEVICES TO NETBOX
+    block:
+    - name: gather facts for VLAN information
+      cisco.ios.ios_facts:
+        gather_network_resources: 
+          - "vlans"
+          - "l2_interfaces"
+        gather_subset:
+          - '!all'
+          - '!min'
+      register: _vlan_result
+      become: true
+      when: ansible_network_os == 'ios'
+    - name: print facts
+      debug:
+        var: _vlan_result
+        verbosity: 2
+    - name: push VLAN database to netbox
+      netbox.netbox.netbox_vlan:
+        netbox_url: "{{ _netbox_url }}"
+        netbox_token: "{{ _api_token }}"
+        validate_certs: no
+        data:
+          name: "{{ item.name }}"
+          tags: "[{{ item.state }}]"
+          vid: "{{ item.vlan_id }}"
+          site: "hetzner"
+      loop: "{{ _vlan_result.ansible_facts.ansible_network_resources.vlans }}"
+      loop_control:
+        label: "{{ item.name }} ==> {{ item.vlan_id }}"
+      when: inventory_hostname == "iosvl2-2"
+    - name: push intf access VLAN to netbox
+      netbox.netbox.netbox_device_interface:
+        netbox_url: "{{ _netbox_url }}"
+        netbox_token: "{{ _api_token }}"
+        validate_certs: no
+        data:
+          device: "{{ inventory_hostname }}"
+          name: "{{ item.name }}"
+          mode: "access"
+          untagged_vlan: "{{ item.access.vlan | default(omit) }}"
+      loop: "{{ _vlan_result.ansible_facts.ansible_network_resources.l2_interfaces }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when: item.access is defined
+    when: inventory_hostname in groups['switch']
+    tags: vlan
+
+
+
+
+    # - name: push intf trunks to netbox
+    #   netbox.netbox.netbox_device_interface:
+    #     netbox_url: "{{ _netbox_url }}"
+    #     netbox_token: "{{ _api_token }}"
+    #     validate_certs: no
+    #     data:
+    #       device: "{{ inventory_hostname }}"
+    #       name: "{{ item.name }}"
+    #       mode: "tagged"
+    #       tagged_vlans: [14]
+    #   loop: "{{ _vlan_result.ansible_facts.ansible_network_resources.l2_interfaces }}"
+    #   when: item.mode is defined and item.mode == "trunk"
