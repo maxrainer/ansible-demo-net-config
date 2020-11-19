@@ -10,10 +10,10 @@ top_level_exact_lines:
   - ip http authentication local
   - no ip http secure-server
 
-nested_intf_name: Loopback2
+nested_intf_name: GigabitEthernet0/2
 nested_intf_lines: 
     - description ANSIBLE CONFIGURED
-    - ip address 10.199.199.1 255.255.255.255
+    - ip address 10.10.123.1 255.255.255.0
 
 qos_policy_map: Foo
 qos_classmap_lines:

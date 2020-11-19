@@ -1,0 +1,28 @@
+---
+
+- name: "CISCO IOS - JINJA TEMPLATE CONFIG"
+  hosts: ios
+  gather_facts: nols 
+  connection: network_cli
+  vars_files:
+    - "{{ playbook_dir }}/vars/ios-bgp-vrf.yml"
+  vars:
+    - ansible_python_interpreter: "{{ ansible_playbook_python }}"
+  become: yes 
+  tasks: 
+  
+  - name: BGP and VRF CONFIG
+    block:
+      - name: vrf config
+        cisco.ios.ios_config:
+          lines: "{{ q('template', 'vrf.j2') }}"
+        register: _result_vrf
+      - debug: 
+          var: _result_vrf
+      - name: bgp config
+        cisco.ios.ios_config:
+          lines: "{{ q('template', 'bgp.j2') }}"
+        register: _result_bgp
+      - debug:
+          var: _result_bgp
+    tags: bgp

@@ -1,0 +1,21 @@
+---
+
+vrfs:
+  - name: vpn11
+    rd: "11:11"
+  - name: vpn12
+    rd: "12:12"
+
+bgp:
+  id: 45000
+  vrfs:
+    - name: vpn11
+      as: 11000
+      neighbor: 192.168.1.11
+      network: 172.17.1.0 
+      netmask: 255.255.255.0
+    - name: vpn12
+      as: 12000
+      neighbor: 192.168.1.12
+      network: 172.17.1.0
+      netmask: 255.255.255.0
